@@ -6,6 +6,7 @@ on:
       - crates/**
       - "!**/*.md"
       - "!.github/screenshots/**"
+      - ".github/workflows/**"
   push:
     branches: [master]
     paths:
@@ -13,6 +14,7 @@ on:
       - crates/**
       - "!**/*.md"
       - "!.github/screenshots/**"
+      - ".github/workflows/**"
 
 jobs:
   build-web:
@@ -33,7 +35,7 @@ jobs:
           name: dist
           path: crates/tanoshi-web/dist
   build-docker:
-    if: ${{ github.ref == 'refs/heads/master' }}
+    # if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: ubuntu-latest
     environment: default
     needs:
@@ -46,36 +48,18 @@ jobs:
         with:
           name: dist
           path: crates/tanoshi-web/dist
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-      - name: Build and push
+      - name: Build
         uses: docker/build-push-action@v2
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
-          push: false
-          tags: faldez/tanoshi:master
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          platforms: linux/amd64 # ,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
   test:
     runs-on: ${{ matrix.os }}
     strategy:
