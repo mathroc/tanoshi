@@ -6,6 +6,7 @@ on:
       - crates/**
       - "!**/*.md"
       - "!.github/screenshots/**"
+      - ".github/workflows/**"
   push:
     branches: [master]
     paths:
